@@ -21,21 +21,18 @@ class ChartWidget extends StatefulWidget {
 
 class _ChartWidgetState extends State<ChartWidget> {
   int viewCandleCount = 0;
-
   int startIndex = 0;
   int endIndex = 0;
   List<CandleData> currentCandles = [];
-  List<dynamic> indicators = [];
-
-  late IndicatorService temp;
+  late IndicatorService _indicatorService;
 
   @override
   void initState() {
     super.initState();
     viewCandleCount = widget.orientation == Orientation.landscape ? 60 : 30;
     endIndex = viewCandleCount;
-
     startIndex = endIndex - viewCandleCount;
+    _indicatorService = IndicatorService(offset: 20.0);
   }
 
   @override
@@ -59,7 +56,6 @@ class _ChartWidgetState extends State<ChartWidget> {
       globalHigh = max(globalHigh, ticker.candles[i].high);
       globalLow = min(globalLow, ticker.candles[i].low);
     }
-    temp = IndicatorService(candleData: currentCandles);
 
     return GestureDetector(
       onHorizontalDragUpdate: (details) {
@@ -78,35 +74,39 @@ class _ChartWidgetState extends State<ChartWidget> {
         }
       },
       child: Chart(
-        orientation: widget.orientation,
-        candlePainter: CustomPaint(
-          painter: CandleStickPainter(
-            candleData: currentCandles,
-            globalHigh: globalHigh,
-            globalLow: globalLow,
-            offset: 20.0,
-          ),
-        ),
-        timePainter: CustomPaint(
-          painter: TimePainter(candleData: currentCandles),
-        ),
-        pricePainter: CustomPaint(
-          painter: PricePainter(high: globalHigh, low: globalLow),
-        ),
-        indicators: [
-          CustomPaint(
-            painter: MovingAverageExponentialPainter(
-              candleData: ticker.candles,
+          orientation: widget.orientation,
+          candlePainter: CustomPaint(
+            painter: CandleStickPainter(
+              candleData: currentCandles,
               globalHigh: globalHigh,
               globalLow: globalLow,
               offset: 20.0,
-              duration: 10,
-              startIndex: startIndex,
-              endIndex: endIndex,
             ),
           ),
-        ],
-      ),
+          timePainter: CustomPaint(
+            painter: TimePainter(candleData: currentCandles),
+          ),
+          pricePainter: CustomPaint(
+            painter: PricePainter(high: globalHigh, low: globalLow),
+          ),
+          indicators: _indicatorService.getIndicatorPainters(
+              candleData: ticker.candles,
+              endIndex: endIndex,
+              startIndex: startIndex,
+              high: globalHigh,
+              low: globalLow)
+          // [
+          //   MovingAverageExponentialPainter(
+          //     candleData: ticker.candles,
+          //     globalHigh: globalHigh,
+          //     globalLow: globalLow,
+          //     offset: 20.0,
+          //     duration: 10,
+          //     startIndex: startIndex,
+          //     endIndex: endIndex,
+          //   ),
+          // ],
+          ),
     );
   }
 }

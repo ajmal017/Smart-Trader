@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:smart_trader/services/indicator_painter.dart';
 
 class Chart extends StatelessWidget {
   final Orientation orientation;
-  final List indicators;
+  final List<IndicatorPainter> indicators;
   final candlePainter;
   final timePainter;
   final pricePainter;
@@ -44,7 +45,10 @@ class Chart extends StatelessWidget {
                 .map((e) => Container(
                       height: height,
                       width: double.infinity,
-                      child: RepaintBoundary(child: e),
+                      child: RepaintBoundary(
+                          child: CustomPaint(
+                        painter: e,
+                      )),
                     ))
                 .toList()
         ],

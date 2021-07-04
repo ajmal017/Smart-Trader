@@ -74,17 +74,31 @@ class CandleStickPainter extends CustomPainter {
       );
 
       //paint candles
-      canvas.drawRect(
-        Rect.fromLTRB(
-          currentCandle.centerX -
-              (currentCandle.width / 2 - currentCandle.width / 5),
-          size.height - currentCandle.candleHighY,
-          currentCandle.centerX +
-              (currentCandle.width / 2 - currentCandle.width / 5),
-          size.height - currentCandle.candleLowY,
-        ),
-        currentCandle.paint,
-      );
+      if (currentCandle.candleHighY == currentCandle.candleLowY) {
+        canvas.drawRect(
+          Rect.fromLTRB(
+            currentCandle.centerX -
+                (currentCandle.width / 2 - currentCandle.width / 5),
+            size.height - currentCandle.candleHighY,
+            currentCandle.centerX +
+                (currentCandle.width / 2 - currentCandle.width / 5),
+            size.height - currentCandle.candleLowY + 1,
+          ),
+          currentCandle.paint,
+        );
+      } else {
+        canvas.drawRect(
+          Rect.fromLTRB(
+            currentCandle.centerX -
+                (currentCandle.width / 2 - currentCandle.width / 5),
+            size.height - currentCandle.candleHighY,
+            currentCandle.centerX +
+                (currentCandle.width / 2 - currentCandle.width / 5),
+            size.height - currentCandle.candleLowY,
+          ),
+          currentCandle.paint,
+        );
+      }
     }
   }
 
@@ -150,34 +164,45 @@ class PricePainter extends CustomPainter {
   }
 }
 
-class MovingAverageExponentialPainter extends CustomPainter {
+abstract class IndicatorPainter extends CustomPainter {
   final double globalHigh;
   final double globalLow;
   final double offset;
-  final List<CandleData> candleData;
   final int endIndex;
   final int startIndex;
-  final int duration;
+  final List<double> values;
 
-  MovingAverageExponentialPainter({
+  IndicatorPainter({
     required this.globalHigh,
     required this.globalLow,
-    required this.candleData,
     required this.offset,
     required this.endIndex,
     required this.startIndex,
-    required this.duration,
+    required this.values,
   });
+}
+
+class MovingAverageExponentialPainter extends IndicatorPainter {
+  MovingAverageExponentialPainter({
+    required double globalHigh,
+    required double globalLow,
+    required double offset,
+    required int endIndex,
+    required int startIndex,
+    required List<double> values,
+  }) : super(
+            globalHigh: globalHigh,
+            globalLow: globalLow,
+            offset: offset,
+            endIndex: endIndex,
+            startIndex: startIndex,
+            values: values);
   @override
   void paint(Canvas canvas, Size size) {
-    final List<double> totalIndicator = MovingAverageExponentialIndicator(
-            candleData: candleData, duration: duration)
-        .values;
-
     //print(totalIndicator.length);
     List<double> indicator = [];
     for (int i = endIndex; i >= startIndex; i--) {
-      indicator.add(totalIndicator[i]);
+      indicator.add(this.values[i]);
     }
 
     //finding width for each bar
