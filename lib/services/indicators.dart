@@ -1,7 +1,12 @@
 import 'package:smart_trader/models/candle_data.dart';
+import 'package:smart_trader/models/indicator_enum.dart';
 import 'package:smart_trader/models/indicator_models.dart';
 
 abstract class Indicator {
+  final IndicatorType type;
+
+  Indicator({required this.type});
+
   List<double> getValues(List<CandleData> candleData);
 }
 
@@ -24,10 +29,11 @@ class CandleStickIndicator {
   List<CandleStick>? get values => _values;
 }
 
-class MovingAverageExponentialIndicator implements Indicator {
+class MovingAverageExponentialIndicator extends Indicator {
   final int duration;
 
-  MovingAverageExponentialIndicator({required this.duration});
+  MovingAverageExponentialIndicator({required this.duration})
+      : super(type: IndicatorType.MovingAverageExponential);
 
   @override
   List<double> getValues(List<CandleData> candleData) {

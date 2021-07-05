@@ -74,6 +74,7 @@ class _ChartWidgetState extends State<ChartWidget> {
         }
       },
       child: Chart(
+          indicatorService: _indicatorService,
           orientation: widget.orientation,
           candlePainter: CustomPaint(
             painter: CandleStickPainter(

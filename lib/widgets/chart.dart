@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:smart_trader/services/indicator_painter.dart';
+import 'package:smart_trader/services/indicator_service.dart';
+import 'package:smart_trader/widgets/view_indicators.dart';
 
 class Chart extends StatelessWidget {
   final Orientation orientation;
   final List<IndicatorPainter> indicators;
+  final IndicatorService indicatorService;
   final candlePainter;
   final timePainter;
   final pricePainter;
@@ -14,6 +17,7 @@ class Chart extends StatelessWidget {
     required this.pricePainter,
     required this.indicators,
     required this.orientation,
+    required this.indicatorService,
   }) : super(key: key);
 
   @override
@@ -50,7 +54,13 @@ class Chart extends StatelessWidget {
                         painter: e,
                       )),
                     ))
-                .toList()
+                .toList(),
+          if (orientation == Orientation.landscape)
+            Positioned(
+              top: 20,
+              left: 20,
+              child: ViewIndicators(indicatorService: indicatorService),
+            ),
         ],
       ),
     );

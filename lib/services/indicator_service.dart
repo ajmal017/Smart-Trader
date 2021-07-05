@@ -7,16 +7,20 @@ import 'package:smart_trader/services/indicators.dart';
 
 class IndicatorService {
   final double offset;
-  Map<IndicatorType, Indicator> _indicators = {};
+  Map<int, Indicator> _indicators = {};
+  int count;
 
-  IndicatorService({required this.offset}) {
-    _indicators[IndicatorType.MovingAverageExponential] =
-        MovingAverageExponentialIndicator(duration: 30);
+  Map<int, Indicator> get indicators => _indicators;
+
+  IndicatorService({required this.offset}) : this.count = 0 {
+    count++;
+    _indicators[count] = MovingAverageExponentialIndicator(duration: 30);
   }
 
   void addIndicator(IndicatorType indicator, List<dynamic> args) {
     if (indicator == IndicatorType.MovingAverageExponential) {
-      _indicators[indicator] =
+      count++;
+      _indicators[count] =
           MovingAverageExponentialIndicator(duration: args[0] as int);
     }
   }
@@ -48,7 +52,7 @@ class IndicatorService {
     required double high,
     required double low,
   }) {
-    Map<IndicatorType, List<double>> indicatorValues = {};
+    Map<int, List<double>> indicatorValues = {};
 
     _indicators.forEach((key, value) {
       indicatorValues[key] = value.getValues(candleData);
@@ -64,8 +68,8 @@ class IndicatorService {
     List<IndicatorPainter> ret = [];
 
     indicatorValues.forEach((key, value) {
-      IndicatorPainter? currentIndicatorPainter =
-          this._getSpecificPainter(key, value, startIndex, endIndex, high, low);
+      IndicatorPainter? currentIndicatorPainter = this._getSpecificPainter(
+          _indicators[key]!.type, value, startIndex, endIndex, high, low);
       if (currentIndicatorPainter != null) {
         ret.add(currentIndicatorPainter);
       }
