@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:smart_trader/models/market.dart';
 import 'package:smart_trader/screens/candle_details_page.dart';
 import 'package:smart_trader/screens/market_details_page.dart';
+import 'package:smart_trader/services/indicator_service.dart';
 import 'package:smart_trader/services/market_service.dart';
 import 'package:smart_trader/services/ticker_service.dart';
 import 'package:smart_trader/widgets/chart_widget.dart';
@@ -79,45 +80,48 @@ class _HomePageWidgetState extends State<HomePageWidget>
       builder: (context, child) => OrientationBuilder(
         builder: (context, orientation) => Scaffold(
           body: ChangeNotifierProvider(
-            create: (context) =>
-                TickerService(marketPair: _selectedPair, timeDuration: '1m'),
-            builder: (context, child) => Stack(
-              children: [
-                MarketDetailsPage(
-                  marketData: widget.marketData,
-                  baseCurrency: _selectedBaseCurrency,
-                  targetCurrency: _selectedTargetCurrency,
-                  pair: _selectedPair,
-                  updateFunction: _updateCurrency,
-                ),
-                Transform(
-                  alignment: Alignment.center,
-                  transform: Matrix4.identity()
-                    ..setEntry(3, 2, 0.001)
-                    ..setEntry(0, 3, 200.0 * _animation.value)
-                    ..rotateY((pi / 6) * _animation.value),
-                  child: ClipRRect(
-                    borderRadius:
-                        BorderRadius.circular(20.0 * _animation.value),
-                    child: CandleDetailsPage(
-                      orientation: orientation,
-                      marketPair: _selectedPair,
-                      baseCurrencyCode: _selectedBaseCurrency,
-                      targetCurrencyCode: _selectedTargetCurrency,
+            create: (context) => IndicatorService(offset: 20.0),
+            builder: (context, child) => ChangeNotifierProvider(
+              create: (context) =>
+                  TickerService(marketPair: _selectedPair, timeDuration: '1m'),
+              builder: (context, child) => Stack(
+                children: [
+                  MarketDetailsPage(
+                    marketData: widget.marketData,
+                    baseCurrency: _selectedBaseCurrency,
+                    targetCurrency: _selectedTargetCurrency,
+                    pair: _selectedPair,
+                    updateFunction: _updateCurrency,
+                  ),
+                  Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.identity()
+                      ..setEntry(3, 2, 0.001)
+                      ..setEntry(0, 3, 200.0 * _animation.value)
+                      ..rotateY((pi / 6) * _animation.value),
+                    child: ClipRRect(
+                      borderRadius:
+                          BorderRadius.circular(20.0 * _animation.value),
+                      child: CandleDetailsPage(
+                        orientation: orientation,
+                        marketPair: _selectedPair,
+                        baseCurrencyCode: _selectedBaseCurrency,
+                        targetCurrencyCode: _selectedTargetCurrency,
+                      ),
                     ),
                   ),
-                ),
-                if (orientation == Orientation.portrait)
-                  GestureDetector(
-                    onHorizontalDragUpdate: (e) {
-                      if (e.delta.dx < 0 && _animation.isCompleted) {
-                        _animationController.reverse();
-                      } else if (e.delta.dx > 0 && _animation.isDismissed) {
-                        _animationController.forward();
-                      }
-                    },
-                  )
-              ],
+                  if (orientation == Orientation.portrait)
+                    GestureDetector(
+                      onHorizontalDragUpdate: (e) {
+                        if (e.delta.dx < 0 && _animation.isCompleted) {
+                          _animationController.reverse();
+                        } else if (e.delta.dx > 0 && _animation.isDismissed) {
+                          _animationController.forward();
+                        }
+                      },
+                    )
+                ],
+              ),
             ),
           ),
         ),

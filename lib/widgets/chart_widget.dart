@@ -2,8 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:smart_trader/models/candle_data.dart';
-import 'package:smart_trader/services/indicator_painter.dart';
 import 'package:smart_trader/services/indicator_service.dart';
 import 'package:smart_trader/services/ticker_service.dart';
 import 'package:smart_trader/widgets/chart.dart';
@@ -23,8 +21,6 @@ class _ChartWidgetState extends State<ChartWidget> {
   int viewCandleCount = 0;
   int startIndex = 0;
   int endIndex = 0;
-  List<CandleData> currentCandles = [];
-  late IndicatorService _indicatorService;
 
   @override
   void initState() {
@@ -32,30 +28,18 @@ class _ChartWidgetState extends State<ChartWidget> {
     viewCandleCount = widget.orientation == Orientation.landscape ? 60 : 30;
     endIndex = viewCandleCount;
     startIndex = endIndex - viewCandleCount;
-    _indicatorService = IndicatorService(offset: 20.0);
   }
 
   @override
   Widget build(BuildContext context) {
     final ticker = Provider.of<TickerService>(context);
-    currentCandles = [];
+    final indicatorService = Provider.of<IndicatorService>(context);
     if (ticker.candles.isEmpty) return Container();
-
-    if (widget.orientation == Orientation.landscape) {
-      viewCandleCount = 60;
-      endIndex = startIndex + viewCandleCount;
-    } else {
-      viewCandleCount = 30;
-      endIndex = startIndex + viewCandleCount;
-    }
-
-    double globalHigh = -double.infinity;
-    double globalLow = double.infinity;
-    for (int i = endIndex; i >= startIndex; i--) {
-      currentCandles.add(ticker.candles[i]);
-      globalHigh = max(globalHigh, ticker.candles[i].high);
-      globalLow = min(globalLow, ticker.candles[i].low);
-    }
+    Provider.of<IndicatorService>(context, listen: false)
+        .updateIndicatorPainters(
+            candleData: ticker.candles,
+            endIndex: endIndex,
+            startIndex: startIndex);
 
     return GestureDetector(
       onHorizontalDragUpdate: (details) {
@@ -74,40 +58,23 @@ class _ChartWidgetState extends State<ChartWidget> {
         }
       },
       child: Chart(
-          indicatorService: _indicatorService,
-          orientation: widget.orientation,
-          candlePainter: CustomPaint(
-            painter: CandleStickPainter(
-              candleData: currentCandles,
-              globalHigh: globalHigh,
-              globalLow: globalLow,
-              offset: 20.0,
-            ),
-          ),
-          timePainter: CustomPaint(
-            painter: TimePainter(candleData: currentCandles),
-          ),
-          pricePainter: CustomPaint(
-            painter: PricePainter(high: globalHigh, low: globalLow),
-          ),
-          indicators: _indicatorService.getIndicatorPainters(
-              candleData: ticker.candles,
-              endIndex: endIndex,
-              startIndex: startIndex,
-              high: globalHigh,
-              low: globalLow)
-          // [
-          //   MovingAverageExponentialPainter(
-          //     candleData: ticker.candles,
-          //     globalHigh: globalHigh,
-          //     globalLow: globalLow,
-          //     offset: 20.0,
-          //     duration: 10,
-          //     startIndex: startIndex,
-          //     endIndex: endIndex,
-          //   ),
-          // ],
-          ),
+        candleData: ticker.candles,
+        orientation: widget.orientation,
+        startIndex: startIndex,
+        endIndex: endIndex,
+        indicatorService: indicatorService,
+        // [
+        //   MovingAverageExponentialPainter(
+        //     candleData: ticker.candles,
+        //     globalHigh: globalHigh,
+        //     globalLow: globalLow,
+        //     offset: 20.0,
+        //     duration: 10,
+        //     startIndex: startIndex,
+        //     endIndex: endIndex,
+        //   ),
+        // ],
+      ),
     );
   }
 }

@@ -4,8 +4,8 @@ import 'package:smart_trader/models/indicator_models.dart';
 
 abstract class Indicator {
   final IndicatorType type;
-
-  Indicator({required this.type});
+  final String name;
+  Indicator({required this.type, required this.name});
 
   List<double> getValues(List<CandleData> candleData);
 }
@@ -33,7 +33,9 @@ class MovingAverageExponentialIndicator extends Indicator {
   final int duration;
 
   MovingAverageExponentialIndicator({required this.duration})
-      : super(type: IndicatorType.MovingAverageExponential);
+      : super(
+            type: IndicatorType.MovingAverageExponential,
+            name: "EMA $duration");
 
   @override
   List<double> getValues(List<CandleData> candleData) {
@@ -47,5 +49,9 @@ class MovingAverageExponentialIndicator extends Indicator {
       arr.add(curr);
     }
     return arr;
+  }
+
+  Indicator getClone(int duration) {
+    return MovingAverageExponentialIndicator(duration: duration);
   }
 }
